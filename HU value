@@ -1,0 +1,28 @@
+import slicer
+import numpy as np
+
+# Get the volume node
+volumeNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLScalarVolumeNode")
+
+# Get the segmentation node
+segmentationNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLSegmentationNode")
+
+# Get the segment ID
+segmentID = segmentationNode.GetSegmentation().GetNthSegmentID(0)
+
+# Get the labelmap representation of the segment
+labelmapNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
+slicer.modules.segmentations.logic().ExportVisibleSegmentsToLabelmapNode(segmentationNode, labelmapNode, volumeNode)
+
+# Get the voxel array
+voxelArray = slicer.util.arrayFromVolume(volumeNode)
+labelArray = slicer.util.arrayFromVolume(labelmapNode)
+
+# Calculate the HU values for the segmented region
+hu_values = voxelArray[labelArray == 1]
+
+# Calculate the minimum, maximum, mean, and standard deviation of HU values
+minHU = np.min(hu_values)
+maxHU = np.max(hu_values)
+meanHU = np.mean(hu_values)
+sdevHU = np.std(hu_values)
